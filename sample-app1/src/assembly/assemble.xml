@@ -1,0 +1,21 @@
+<!--
+ Copyright (c) 2014, 2015 Oracle and/or its affiliates. All rights reserved.
+-->
+
+<assembly>
+  <includeBaseDirectory>false</includeBaseDirectory>
+
+  <formats>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+     <fileSet>
+      <directory>./wlsdeploy</directory>
+      <outputDirectory>wlsdeploy</outputDirectory>
+      <includes>
+          <include>**</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+
+</assembly> 
