@@ -1,7 +1,0 @@
-appDeployments:
-  Application:
-    'sample-app':
-      SourcePath: 'wlsdeploy/applications/sample-app.war'
-      Target: '@@ENV:RESOURCE_PREFIX@@-cluster'
-      ModuleType: war
-      StagingMode: nostage
