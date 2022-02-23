@@ -1,0 +1,79 @@
+apiVersion: weblogic.oracle/v8
+kind: Domain
+metadata:
+  labels:
+    weblogic.domainUID: lelia-uid
+  name: lelia
+  namespace: lelia-ns
+spec:
+  adminServer:
+    serverPod:
+      env:
+      - name: USER_MEM_ARGS
+        value: -Xms256m -Xmx512m -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom
+      - name: JAVA_OPTIONS
+        value: -Dweblogic.store.file.LockEnabled=false -Dweblogic.rjvm.allowUnknownHost=true
+          -Dweblogic.security.remoteAnonymousRMIT3Enabled=false -Dweblogic.security.remoteAnonymousRMIIIOPEnabled=false
+    serverStartState: RUNNING
+  clusters:
+  - clusterName: lelia-cluster
+    replicas: 1
+    serverPod:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: weblogic.clusterName
+                  operator: In
+                  values:
+                  - lelia-cluster
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      env:
+      - name: USER_MEM_ARGS
+        value: -XX:+UseContainerSupport -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom
+      - name: JAVA_OPTIONS
+        value: -Dweblogic.store.file.LockEnabled=false -Dweblogic.rjvm.allowUnknownHost=true
+          -Dweblogic.security.remoteAnonymousRMIT3Enabled=false -Dweblogic.security.remoteAnonymousRMIIIOPEnabled=false
+    serverStartState: RUNNING
+  configuration:
+    introspectorJobActiveDeadlineSeconds: 300
+    model:
+      configMap: lelia-configmap
+      domainType: WLS
+      runtimeEncryptionSecret: lelia-runtime-encryption-secret
+  dataHome: /u01/shared/weblogic-domains/lelia/data/store
+  domainHome: /u01/data/domains/lelia-uid
+  domainHomeSourceType: FromModel
+  #image: phx.ocir.io/ax8cfrmecktw/lelia2/wls-base-image/lelia/122140:12.2.1.4.220118-220207-22-02-23_07-05-21
+  image: phx.ocir.io/ax8cfrmecktw/lelia2/wls-base-image/lelia/122140:12.2.1.4.220118-220207-22-02-23_07-48-40
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+  - name: ocirsecrets
+  includeServerOutInPodLog: true
+  logHome: /u01/shared/weblogic-domains/lelia/logs
+  logHomeEnabled: true
+  restartVersion: '1'
+  serverPod:
+    env:
+    - name: RESOURCE_PREFIX
+      value: lelia
+    - name: JAVA_OPTIONS
+      value: '-Dweblogic.StdoutDebugEnabled=false -Doracle.jdbc.fanEnabled=false '
+    - name: OKE_DOMAIN_NAME
+      value: lelia
+    nodeSelector:
+      name: lelia2-wls-np
+      usage: weblogic
+    volumeMounts:
+    - mountPath: /u01/shared
+      name: weblogic-domain-storage-volume
+    volumes:
+    - name: weblogic-domain-storage-volume
+      persistentVolumeClaim:
+        claimName: lelia-oke-pvc
+  serverStartPolicy: IF_NEEDED
+  webLogicCredentialsSecret:
+    name: lelia-weblogic-credentials
