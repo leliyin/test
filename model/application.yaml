@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: updatedomain 
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/leliyin/test.git
+    targetRevision: HEAD
+    path: model 
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: lelia-ns
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
